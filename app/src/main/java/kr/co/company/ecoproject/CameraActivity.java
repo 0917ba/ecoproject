@@ -10,6 +10,8 @@ import android.view.View;
 import android.provider.MediaStore;
 import android.widget.ImageView;
 
+import java.io.ByteArrayOutputStream;
+
 public class CameraActivity extends AppCompatActivity {
 
     private ImageView imageview;
@@ -33,8 +35,18 @@ public class CameraActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_IMAGE_CODE && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
-            imageview.setImageBitmap(imageBitmap);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            Bitmap bitmap = (Bitmap) extras.get("data");
+            float scale = (float) (1024/(float)bitmap.getWidth());
+            int image_w = (int) (bitmap.getWidth() * scale);
+            int image_h = (int) (bitmap.getHeight() * scale);
+            Bitmap resize = Bitmap.createScaledBitmap(bitmap, image_w, image_h, true);
+            resize.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+            byte[] byteArray = stream.toByteArray();
+
+            Intent intent = new Intent(CameraActivity.this, FinalActivity.class);
+            intent.putExtra("image", byteArray);
+            startActivity(intent);
         }
     }
 }
